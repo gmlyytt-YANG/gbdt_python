@@ -1,10 +1,29 @@
 # -*- coding:utf-8 -*-
+########################################################################
+#
+# Copyright (c) 2018 Yang Li. All Rights Reserved
+#
+########################################################################
+
+"""
+File: decision_tree.py
+Author: Yang Li
+Date: 2018/10/02 21:57:31
+"""
+
 
 import sys
 import numpy as np
 import util
 
 def variance_reduce(feature, label):
+    """Choose the best threshold of a feature according to
+        distribution of label.
+    :param feature: vector of data.
+    :param label:
+    :return: min_var: min variance of the feature
+    :return: best_threshold:
+    """
     data = np.vstack((feature, label)).T
     data_sorted = np.array(sorted(data, key=lambda x: x[0]))
     delta = float(data_sorted[-1][0] - data_sorted[0][0]) / 10
@@ -27,12 +46,31 @@ def variance_reduce(feature, label):
 
 
 class DecisionTree(object):
+    """Decision tree class define
+
+    Regression tree.
+
+    Atttibutes:
+    depth: max depth of the tree.
+    mvr: min variance reduce(one kind of metrics)
+    tree_info: model parameter
+    """
     def __init__(self, depth, min_variance_reduce):
+        """Constructor.
+        :param depth:
+        :param min_variance_reduce:
+        """
         self.depth = depth
         self.mvr = min_variance_reduce
         self.tree_info = {}
 
     def choose_best_feature(self, data):
+        """Choose best feature
+        :param data:
+        :return: best_feature_index:
+        :return: feature_threshold:
+        :return: feature_threshold
+        """
         index = 0
         min_variance_reduce = sys.float_info.max
         best_feature_index, feature_threshold = 0, 0.0
@@ -44,9 +82,14 @@ class DecisionTree(object):
                 min_variance_reduce = var_red
                 best_feature_index, feature_threshold = index, threshold
             index += 1
-        return best_feature_index, feature_threshold, min_variance_reduce
+        return best_feature_index, feature_threshold, feature_threshold
 
     def create_tree(self, depth, data):
+        """Create tree.
+        :param depth:
+        :param data:
+        :return: tree_info: model parameter
+        """
         if depth == 1:
             return np.mean(data[:, -1])
         if util.matrix_same(data[:, -1]):
@@ -78,10 +121,19 @@ class DecisionTree(object):
             return np.mean(data[:, -1])
 
     def fit(self, data):
+        """Fit the model
+        :param data:
+        :return:
+        """
         max_depth = self.depth
         self.tree_info = self.create_tree(max_depth, data)
 
     def predict_core(self, test_data, tree_info):
+        """Core function of Predict.
+        :param test_data:
+        :param tree_info:
+        :return:
+        """
         if not isinstance(tree_info, dict):
             return tree_info
         if len(test_data) <= tree_info['feature']:
@@ -93,4 +145,8 @@ class DecisionTree(object):
             return self.predict_core(test_data, tree_info['left'])
 
     def predict(self, test_data):
+        """Predict according to the test_data
+        :param test_data:
+        :return:
+        """
         return self.predict_core(test_data, self.tree_info)

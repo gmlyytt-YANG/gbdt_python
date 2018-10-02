@@ -1,4 +1,17 @@
 # -*- coding:utf-8 -*-
+########################################################################
+#
+# Copyright (c) 2018 Yang Li. All Rights Reserved
+#
+########################################################################
+
+"""
+File: gbdt.py
+Author: Yang Li
+Date: 2018/10/02 21:47:31
+Descriptor:
+    gbdt self-realization.
+"""
 
 import numpy as np
 import warnings
@@ -10,7 +23,23 @@ warnings.simplefilter("error")
 
 
 class GBDT(object):
+    """GBDT class define.
+
+    This version of gbdt can achieve subsample,
+    which is better to deal with over-fitting.
+
+    Attributes:
+        sub_sample: subsample of data-set.
+        n_estimators: tree num.
+        learning_rate: lr of sgd.
+        max_depth: tree_parameter.
+        mvr: tree_parameter.
+        regressors: trees
+    """
     def __init__(self, params):
+        """Constructor of class.
+        :param params:
+        """
         self.sub_sample = params['sub_sample']
         self.n_estimators = params['n_estimators']
         self.learning_rate = params['learning_rate']
@@ -21,17 +50,28 @@ class GBDT(object):
         self.__check_params()
 
     def __check_params(self):
+        """Check parameters' legality.
+        :return:
+        """
         self.sub_sample = np.clip(self.sub_sample, 0, 1)
         self.learning_rate = np.clip(self.learning_rate, 0, 1)
         if self.n_estimators < 1:
             self.n_estimators = 1
 
     def __get_dataset(self, dataset):
+        """Get data by sampling without replacement
+        :param dataset:
+        :return: subsampled dataset.
+        """
         np.random.shuffle(dataset)
         dataset_sample = dataset[:int(self.sub_sample * len(dataset))]
         return dataset_sample
 
     def fit(self, dataset):
+        """Fit the model by dataset.
+        :param dataset:
+        :return:
+        """
         dataset = dataset.astype(float)
         if len(dataset) == 0:
             return
