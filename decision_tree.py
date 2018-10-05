@@ -16,6 +16,7 @@ import sys
 import numpy as np
 import util
 
+
 def variance_reduce(feature, label):
     """Choose the best threshold of a feature according to
         distribution of label.
