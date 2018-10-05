@@ -35,6 +35,7 @@ class GBDT(object):
         learning_rate: lr of sgd.
         max_depth: tree_parameter.
         mvr: tree_parameter.
+        loss_gradient: method of loss-gradient compute.
         regressors: trees
     """
 
