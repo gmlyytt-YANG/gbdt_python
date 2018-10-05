@@ -36,6 +36,7 @@ class GBDT(object):
         mvr: tree_parameter.
         regressors: trees
     """
+
     def __init__(self, params):
         """Constructor of class.
         :param params:
@@ -79,10 +80,12 @@ class GBDT(object):
         for i in range(self.n_estimators):
             dataset_sample = self.__get_dataset(dataset)
             annotations = dataset_sample[:, -1].copy()
+            print(len(annotations))
             regressor = self.regressors[i]
             if i == 0:
                 regressor.fit(dataset_sample)
                 labels = [regressor.predict(data[:-1]) for data in dataset_sample]
+                print(len(labels))
             else:
                 last_result = labels.copy()  # f_{m-1}(x) when m > 1
                 targets = [-util.square_loss_gradient(dataset_sample[i, -1], labels[i]) \
