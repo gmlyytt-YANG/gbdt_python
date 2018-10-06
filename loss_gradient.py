@@ -18,6 +18,7 @@ import abc
 
 
 class LossBase(metaclass=abc.ABCMeta):
+    """Abstract class of loss."""
     @abc.abstractmethod
     def loss(self, y_i, f_x):
         """Compute loss of y and f_x.
@@ -38,6 +39,7 @@ class LossBase(metaclass=abc.ABCMeta):
 
 
 class SquareLoss(LossBase):
+    """Square Loss definition."""
     def loss(self, y_i, f_x):
         """Compute square loss of y and f_x.
         :param y_i:
