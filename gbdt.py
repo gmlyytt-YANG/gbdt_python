@@ -14,11 +14,14 @@ Descriptor:
 """
 
 import numpy as np
-import warnings
-from decision_tree import DecisionTree
-import util
-import loss_gradient
 from sklearn.datasets import load_boston
+import warnings
+
+import criterion
+from decision_tree import CartRregressor
+from base_regressor import LinearRegressor
+import loss_gradient
+import util
 
 warnings.simplefilter("error")
 
@@ -33,10 +36,8 @@ class GBDT(object):
         sub_sample: subsample of data-set.
         n_estimators: tree num.
         learning_rate: lr of sgd.
-        max_depth: tree_parameter.
-        mvr: tree_parameter.
-        loss_gradient: method of loss-gradient compute.
-        regressors: trees
+        loss_gradient: loss gradient parameters.
+        regressors: n_estimators regressor(which could be any base regressor) vector.
     """
 
     def __init__(self, params):
@@ -46,11 +47,10 @@ class GBDT(object):
         self.sub_sample = params['sub_sample']
         self.n_estimators = params['n_estimators']
         self.learning_rate = params['learning_rate']
-        self.max_depth = params['max_depth']
-        self.mvr = params['mvr']
         self.loss_gradient = params['loss_gradient']
-        self.regressors = [DecisionTree(params['max_depth'], params['mvr']) \
-                           for i in range(self.n_estimators)]
+        # this version of gbdt could use any regressor, not just decision tree.
+        self.regressors = \
+            [params['regressor'](params['regressor_param'])] * self.n_estimators
         self.__check_params()
 
     def __check_params(self):
@@ -110,14 +110,24 @@ if __name__ == "__main__":
     data = matrix['data']
     target = matrix['target']
     matrix = np.hstack((data, np.expand_dims(target, 1)))
-    loss_gradient_compute = loss_gradient.SquareLoss()
+    # params = {
+    #     'sub_sample': 0.7,
+    #     'n_estimators': 500,
+    #     'learning_rate':  0.00001,
+    #     'regressor': CartRregressor,
+    #     'regressor_param': {
+    #         'max_depth': 4,
+    #         'criterion': criterion.VarianceReduce()
+    #     },
+    #     'loss_gradient': loss_gradient.SquareLoss()
+    # }
     params = {
         'sub_sample': 0.7,
         'n_estimators': 500,
         'learning_rate': 0.00001,
-        'max_depth': 4,
-        'mvr': 0.03,
-        'loss_gradient': loss_gradient_compute
+        'regressor': LinearRegressor,
+        'regressor_param': None,
+        'loss_gradient': loss_gradient.SquareLoss()
     }
     gbdt_regressor = GBDT(params)
     gbdt_regressor.fit(matrix)
