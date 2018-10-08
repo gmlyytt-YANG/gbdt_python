@@ -69,15 +69,19 @@ class DecisionTree(metaclass=abc.ABCMeta):
 
 
 class LinearRegressor(object):
+    """LinearRegressor class"""
     def __init__(self, params=None):
+        """Constructor"""
         self.regressor = LinearRegression()
 
     def fit(self, data):
+        """fit function"""
         X = data[:, :-1]
         y = data[:, -1]
         self.regressor.fit(X, y)
 
     def predict(self, test_data):
+        """predict function"""
         # LinearRegression format
         if isinstance(test_data, list):
             test_data = np.array(test_data)
