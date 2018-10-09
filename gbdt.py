@@ -22,7 +22,7 @@ import criterion
 from decision_tree import CartRregressor
 from base_regressor import LinearRegressor
 import loss_gradient
-from plot import AnimationPlot
+from plot import AnimationPlot, ImagePlot
 import util
 
 warnings.simplefilter("error")
@@ -73,7 +73,7 @@ class GradientBosstingRegressor(object):
         dataset_sample = dataset[:int(self.sub_sample * len(dataset))]
         return dataset_sample
 
-    def fit(self, dataset, gui=False):
+    def fit(self, dataset, gui="cmd"):
         """Fit core function.
         :param dataset:
         :return: loss_list: training process
@@ -107,11 +107,15 @@ class GradientBosstingRegressor(object):
                 util.update_last_column(dataset_sample, labels)
             loss = self.loss_gradient.loss(annotations, labels)
             loss_max = max(loss, loss_max)
-            if not gui:
+            if gui == "cmd":
                 print('iteration={}, loss={}'.format(i, loss))
             loss_list.append(loss)
-        if gui:
+        if gui == "image":
+            ImagePlot().plot(loss_list, 0, self.n_estimators, 0, loss_max)
+        # just for fun
+        elif gui == "animation":
             AnimationPlot().plot(loss_list, 0, self.n_estimators, 0, loss_max)
+
         return loss_list
 
 
@@ -140,6 +144,6 @@ if __name__ == "__main__":
         'loss_gradient': loss_gradient.SquareLoss()
     }
     gbdt_regressor = GradientBosstingRegressor(params_tree)
-    loss_list_tree = gbdt_regressor.fit(matrix, gui=True)
+    loss_list_tree = gbdt_regressor.fit(matrix, gui="image")
     gbdt_regressor = GradientBosstingRegressor(params_lr)
-    loss_list_lr = gbdt_regressor.fit(matrix, gui=True)
+    loss_list_lr = gbdt_regressor.fit(matrix, gui="image")

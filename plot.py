@@ -13,14 +13,12 @@ Descriptor:
     plot function.
 """
 
+import abc
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
-import matplotlib
-
-matplotlib.use("Agg")
 
 
-class AnimationPlot(object):
+class BasePlot(metaclass=abc.ABCMeta):
     def data_gen(self, data_list):
         """Data generator.
         :param data_list:
@@ -34,8 +32,9 @@ class AnimationPlot(object):
             for elem in data_list:
                 yield elem[0], elem[1]
 
+    @abc.abstractmethod
     def plot(self, data_list, x_min, x_max, y_min, y_max):
-        """Plot animation.
+        """Plot function.
         :param data_list:
         :param x_min:
         :param x_max:
@@ -43,6 +42,19 @@ class AnimationPlot(object):
         :param y_max:
         :return:
         """
+        pass
+
+
+class ImagePlot(BasePlot):
+    def plot(self, data_list, x_min, x_max, y_min, y_max):
+        fig, ax = plt.subplots()
+        ax.plot([i[1] for i in self.data_gen(data_list)], lw=2)
+        ax.grid()
+        plt.show()
+
+
+class AnimationPlot(object):
+    def plot(self, data_list, x_min, x_max, y_min, y_max):
         fig, ax = plt.subplots()
         line, = ax.plot([], [], lw=2)
         ax.grid()
@@ -70,6 +82,6 @@ class AnimationPlot(object):
             line.set_data(xdata, ydata)
             return line,
 
-        ani = animation.FuncAnimation(fig, run, self.data_gen(data_list), blit=False, interval=10,
-                                      repeat=False, init_func=init)
+        animation.FuncAnimation(fig, run, self.data_gen(data_list), blit=False, interval=10,
+                                repeat=False, init_func=init)
         plt.show()
