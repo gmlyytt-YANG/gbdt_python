@@ -14,6 +14,7 @@ Descriptor:
 """
 
 import numpy as np
+import sys
 from sklearn.datasets import load_boston
 import warnings
 
@@ -21,12 +22,13 @@ import criterion
 from decision_tree import CartRregressor
 from base_regressor import LinearRegressor
 import loss_gradient
+from plot import AnimationPlot
 import util
 
 warnings.simplefilter("error")
 
 
-class GBDT(object):
+class GradientBosstingRegressor(object):
     """GBDT class define.
 
     This version of gbdt can achieve subsample,
@@ -71,14 +73,16 @@ class GBDT(object):
         dataset_sample = dataset[:int(self.sub_sample * len(dataset))]
         return dataset_sample
 
-    def fit(self, dataset):
-        """Fit the model by dataset.
+    def fit(self, dataset, gui=False):
+        """Fit core function.
         :param dataset:
-        :return:
+        :return: loss_list: training process
         """
         dataset = dataset.astype(float)
         if len(dataset) == 0:
             return
+        loss_list = []
+        loss_max = sys.float_info.min
         for i in range(self.n_estimators):
             dataset_sample = self.__get_dataset(dataset)
             annotations = dataset_sample[:, -1].copy()
@@ -102,7 +106,13 @@ class GBDT(object):
                 labels = np.array(last_labels) + np.array(new_labels)
                 util.update_last_column(dataset_sample, labels)
             loss = self.loss_gradient.loss(annotations, labels)
-            print("iteration {}, loss = {}".format(i, loss))
+            loss_max = max(loss, loss_max)
+            if not gui:
+                print('iteration={}, loss={}'.format(i, loss))
+            loss_list.append(loss)
+        if gui:
+            AnimationPlot().plot(loss_list, 0, self.n_estimators, 0, loss_max)
+        return loss_list
 
 
 if __name__ == "__main__":
@@ -110,24 +120,26 @@ if __name__ == "__main__":
     data = matrix['data']
     target = matrix['target']
     matrix = np.hstack((data, np.expand_dims(target, 1)))
-    # params = {
-    #     'sub_sample': 0.7,
-    #     'n_estimators': 500,
-    #     'learning_rate':  0.00001,
-    #     'regressor': CartRregressor,
-    #     'regressor_param': {
-    #         'max_depth': 4,
-    #         'criterion': criterion.VarianceReduce()
-    #     },
-    #     'loss_gradient': loss_gradient.SquareLoss()
-    # }
-    params = {
+    params_tree = {
         'sub_sample': 0.7,
-        'n_estimators': 500,
+        'n_estimators': 100,
+        'learning_rate': 0.00001,
+        'regressor': CartRregressor,
+        'regressor_param': {
+            'max_depth': 4,
+            'criterion': criterion.VarianceReduce()
+        },
+        'loss_gradient': loss_gradient.SquareLoss()
+    }
+    params_lr = {
+        'sub_sample': 0.7,
+        'n_estimators': 100,
         'learning_rate': 0.00001,
         'regressor': LinearRegressor,
         'regressor_param': None,
         'loss_gradient': loss_gradient.SquareLoss()
     }
-    gbdt_regressor = GBDT(params)
-    gbdt_regressor.fit(matrix)
+    gbdt_regressor = GradientBosstingRegressor(params_tree)
+    loss_list_tree = gbdt_regressor.fit(matrix, gui=True)
+    gbdt_regressor = GradientBosstingRegressor(params_lr)
+    loss_list_lr = gbdt_regressor.fit(matrix, gui=True)
